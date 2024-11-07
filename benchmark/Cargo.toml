@@ -1,0 +1,14 @@
+[package]
+name = "benchmark"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+quest01 = { path = "../quest01" }
+quest02 = { path = "../quest02" }
+quest03 = { path = "../quest03" }
+
+[[bench]]
+name = "benchmarks"
+harness = false
