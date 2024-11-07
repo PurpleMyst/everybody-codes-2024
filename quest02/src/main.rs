@@ -8,6 +8,7 @@ fn solve_part1(input: &str) -> u64 {
         .split(',')
         .map(|word| word.as_bytes())
         .collect();
+
     lines
         .flat_map(|line| line.split_ascii_whitespace())
         .map(|haystack| {
@@ -44,6 +45,28 @@ fn word_mask(needle: &[u8], haystack: &[u8]) -> u64 {
     mask
 }
 
+fn word_mask_reverse(needle: &[u8], haystack: &[u8]) -> u64 {
+    debug_assert!(haystack.len() <= 64);
+    let mut mask = 0u64;
+
+    let hay_len = haystack.len();
+    let needle_len = needle.len();
+
+    if needle_len == 0 || needle_len > hay_len {
+        return 0;
+    }
+
+    for i in 0..=hay_len - needle_len {
+        if haystack[i..i + needle_len].iter().rev().eq(needle.iter()) {
+            for j in i..i + needle_len {
+                mask |= 1 << j;
+            }
+        }
+    }
+
+    mask
+}
+
 fn solve_part2(input: &str) -> u64 {
     let mut lines = input.trim().lines();
     let words: Vec<&[u8]> = lines
@@ -54,23 +77,17 @@ fn solve_part2(input: &str) -> u64 {
         .split(',')
         .map(|word| word.as_bytes())
         .collect();
+
     lines
         .flat_map(|line| line.split_ascii_whitespace())
         .map(|haystack| {
             let hay_bytes = haystack.as_bytes();
             let mut mask = 0u64;
 
-            words
-                .iter()
-                .map(|&word| word_mask(word, hay_bytes))
-                .for_each(|m| mask |= m);
-
-            let reversed_hay_bytes: Vec<u8> = hay_bytes.iter().rev().cloned().collect();
-            words
-                .iter()
-                .map(|&word| word_mask(word, &reversed_hay_bytes))
-                .map(|m| m.reverse_bits() >> (64 - hay_bytes.len()))
-                .for_each(|m| mask |= m);
+            for &word in &words {
+                mask |= word_mask(word, hay_bytes);
+                mask |= word_mask_reverse(word, hay_bytes);
+            }
 
             mask.count_ones() as u64
         })
@@ -92,76 +109,57 @@ fn transpose<T: Copy>(grid: Vec<Vec<T>>) -> Vec<Vec<T>> {
 
 fn solve_part3(input: &str) -> u64 {
     let mut lines = input.trim().lines();
-    let mut words: Vec<Vec<u8>> = lines
-        .next()
-        .unwrap()
-        .strip_prefix("WORDS:")
-        .unwrap()
-        .split(',')
-        .map(|word| word.as_bytes().to_vec())
-        .collect();
-    words.extend(
-        words
-            .iter()
-            .map(|word| word.iter().rev().cloned().collect::<Vec<u8>>())
-            .collect::<Vec<Vec<u8>>>(),
-    );
-    words.sort();
-    words.dedup();
-    words.sort_by_key(|w| w.len());
+    let words_line = lines.next().unwrap();
+    let words_iter = words_line.strip_prefix("WORDS:").unwrap().split(',');
 
-    // skip empty line
+    let mut words = Vec::new();
+    for word in words_iter {
+        let word_bytes = word.as_bytes().to_vec();
+        words.push(word_bytes.clone());
+        let reversed_word: Vec<u8> = word_bytes.iter().rev().cloned().collect();
+        words.push(reversed_word);
+    }
+
+    // Skip empty line
     lines.next();
 
     let grid: Vec<Vec<u8>> = lines.map(|row| row.as_bytes().to_vec()).collect();
-
     let mut mask: Vec<Vec<bool>> = grid.iter().map(|row| vec![false; row.len()]).collect();
 
     part3_step(&words, &grid, &mut mask, true);
 
-    // transpose the grid for the vertical search
-    let grid = transpose(grid);
-    let mut mask = transpose(mask);
+    // Transpose the grid and mask for vertical search
+    let grid_t = transpose(grid);
+    let mut mask_t = transpose(mask);
 
-    part3_step(&words, &grid, &mut mask, false);
+    part3_step(&words, &grid_t, &mut mask_t, false);
 
-    // Transpose back
-    let mask = transpose(mask);
+    // Transpose back the mask
+    let mask = transpose(mask_t);
 
     mask.iter()
         .map(|row| row.iter().filter(|&&cell| cell).count() as u64)
         .sum()
 }
 
-fn part3_step(words: &Vec<Vec<u8>>, grid: &Vec<Vec<u8>>, mask: &mut Vec<Vec<bool>>, pacman: bool) {
-    let row_len = grid[0].len();
-    for word in words {
-        let word_len = word.len();
-        for (y, row) in grid.iter().enumerate() {
-            for start in 0..row_len {
+fn part3_step(words: &[Vec<u8>], grid: &[Vec<u8>], mask: &mut [Vec<bool>], pacman: bool) {
+    for (y, row) in grid.iter().enumerate() {
+        let row_len = row.len();
+        for i in 0..row_len {
+            let c = row[i];
+            for word in words.iter().filter(|w| w[0] == c) {
+                let word_len = word.len();
                 let mut matched = true;
-                for i in 0..word_len {
-                    let x = if pacman {
-                        (start + i) % row_len
-                    } else {
-                        start + i
-                    };
-                    if x >= row_len {
-                        matched = false;
-                        break;
-                    }
-                    if row[x] != word[i] {
+                for j in 0..word_len {
+                    let x = if pacman { (i + j) % row_len } else { i + j };
+                    if x >= row_len || row[x] != word[j] {
                         matched = false;
                         break;
                     }
                 }
                 if matched {
-                    for i in 0..word_len {
-                        let x = if pacman {
-                            (start + i) % row_len
-                        } else {
-                            start + i
-                        };
+                    for j in 0..word_len {
+                        let x = if pacman { (i + j) % row_len } else { i + j };
                         if x >= row_len {
                             break;
                         }
