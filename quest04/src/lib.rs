@@ -3,19 +3,21 @@ pub fn solve_part12(input: &str) -> u64 {
         .lines()
         .map(|line| line.parse().unwrap())
         .collect::<Vec<u64>>();
+
     let min_nail = nails.iter().min().unwrap();
+
     nails.iter().map(|nail| nail - min_nail).sum()
 }
 
 pub fn solve_part3(input: &str) -> u64 {
-    let nails = input
+    let mut nails = input
         .lines()
         .map(|line| line.parse().unwrap())
         .collect::<Vec<u64>>();
 
-    nails
-        .iter()
-        .map(|&target| nails.iter().map(|nail| nail.abs_diff(target)).sum())
-        .min()
-        .unwrap()
+    // The median is the element that minimizes the sum of absolute differences, from statistics.
+    nails.sort_unstable();
+    let median = nails[nails.len() / 2];
+
+    nails.iter().map(|nail| nail.abs_diff(median)).sum()
 }
