@@ -1,6 +1,6 @@
 [package]
 name = "benchmark"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 
 [dependencies]
@@ -11,5 +11,5 @@ quest03 = { path = "../quest03" }
 quest04 = { path = "../quest04" }
 
 [[bench]]
-name = "benchmarks"
+name = "criterion"
 harness = false
