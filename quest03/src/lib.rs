@@ -1,8 +1,8 @@
 use std::mem::swap;
 
 #[inline]
-pub fn solve(input: &str, include_diagonals: bool) -> u64 {
-    let mut depthmap: Vec<Vec<usize>> = Vec::new();
+pub fn solve(input: &str, include_diagonals: bool) -> u16 {
+    let mut depthmap: Vec<Vec<u16>> = Vec::new();
     let mut diggable: Vec<Vec<bool>> = Vec::new();
 
     for row in input.lines() {
@@ -65,5 +65,5 @@ pub fn solve(input: &str, include_diagonals: bool) -> u64 {
         }
     }
 
-    depthmap.iter().flatten().map(|&h| h as u64).sum()
+    depthmap.into_iter().flatten().sum()
 }
