@@ -1,8 +1,9 @@
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
-type Columns = [Vec<usize>; 4];
+type Columns = [Vec<u16>; 4];
 
-fn concat(a: usize, b: usize) -> usize {
+fn concat(a: usize, b: u16) -> usize {
+    let b = usize::from(b);
     let mut ten = 10;
     while ten <= b {
         ten *= 10;
@@ -14,8 +15,7 @@ fn shout(columns: &Columns) -> usize {
     columns
         .iter()
         .map(|column| column[0])
-        .reduce(|acc, n| concat(acc, n))
-        .unwrap()
+        .fold(0, |acc, n| concat(acc, n))
 }
 
 fn parse_input(input: &str) -> Columns {
@@ -23,7 +23,7 @@ fn parse_input(input: &str) -> Columns {
     input
         .trim()
         .lines()
-        .map(|line| line.split(' ').map(|n| n.parse::<usize>().unwrap()))
+        .map(|line| line.split(' ').map(|n| n.parse::<u16>().unwrap()))
         .for_each(|row| {
             row.zip(columns.iter_mut())
                 .for_each(|(cell, column)| column.push(cell))
@@ -34,15 +34,11 @@ fn parse_input(input: &str) -> Columns {
 fn step(columns: &mut Columns, i: usize) {
     let clapper = columns[i % 4].remove(0);
     let target_column = &mut columns[(i + 1) % 4];
-
     let height = target_column.len();
-
-    let insertion_point = (0..height)
-        .chain((1..=height).rev())
-        .cycle()
-        .nth(clapper - 1)
-        .unwrap();
-
+    let mut insertion_point = (clapper as usize % (2 * height)).abs_diff(1);
+    if insertion_point > height {
+        insertion_point = 2 * height - insertion_point;
+    }
     target_column.insert(insertion_point, clapper);
 }
 
@@ -60,9 +56,10 @@ pub fn solve_part2(input: &str) -> usize {
     for i in 0.. {
         step(&mut columns, i);
         let shouted = shout(&columns);
-        *counters.entry(shouted).or_insert(0) += 1;
-        if counters[&shouted] == 2024 {
-            return (i + 1) * shouted;
+        let counter = counters.entry(shouted).or_insert(0);
+        *counter += 1;
+        if *counter == 2024 {
+            return i + 1 * shouted;
         }
     }
     unreachable!()
@@ -81,4 +78,14 @@ pub fn solve_part3(input: &str) -> usize {
         answer = answer.max(shouted);
     }
     unreachable!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part3() {
+        assert_eq!(solve_part3(include_str!("part3.txt")), 8641100010001000);
+    }
 }
