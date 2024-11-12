@@ -87,12 +87,30 @@ fn bench_quest05(c: &mut Criterion) {
     });
 }
 
+fn bench_quest06(c: &mut Criterion) {
+    let input1 = include_str!("../../quest06/src/part1.txt");
+    c.bench_function("quest06_part1", |b| {
+        b.iter(|| quest06::solve::<false>(black_box(input1)))
+    });
+
+    let input2 = include_str!("../../quest06/src/part2.txt");
+    c.bench_function("quest06_part2", |b| {
+        b.iter(|| quest06::solve::<false>(black_box(input2)))
+    });
+
+    let input3 = include_str!("../../quest06/src/part3.txt");
+    c.bench_function("quest06_part3", |b| {
+        b.iter(|| quest06::solve::<true>(black_box(input3)))
+    });
+}
+
 fn bench_all(c: &mut Criterion) {
     bench_quest01(c);
     bench_quest02(c);
     bench_quest03(c);
     bench_quest04(c);
     bench_quest05(c);
+    bench_quest06(c);
 }
 
 criterion_group!(benches, bench_all);
