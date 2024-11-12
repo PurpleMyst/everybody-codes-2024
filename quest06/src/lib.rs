@@ -1,19 +1,22 @@
+use std::collections::hash_map::Entry;
+
 use rustc_hash::FxHashMap as HashMap;
 
-type Tree = HashMap<&'static str, Vec<&'static str>>;
-pub type Path = Vec<&'static str>;
+type Id = &'static str;
+type Tree = HashMap<Id, Vec<Id>>;
+pub type Path = Vec<Id>;
 
 const FRUIT: &str = "@";
 
-fn walk<const CHECK_CYCLES: bool>(tree: &Tree, path: &mut Path, paths: &mut Vec<Path>) {
+fn walk<const CHECK_CYCLES: bool>(tree: &Tree, path: &mut Path, paths: &mut HashMap<usize, Path>) {
     let &conductor = path.last().unwrap();
     if conductor == FRUIT {
-        match paths.binary_search_by_key(&path.len(), |path| path.len()) {
-            Ok(len) => {
-                paths.remove(len);
+        match paths.entry(path.len()) {
+            Entry::Occupied(entry) => {
+                entry.remove();
             }
-            Err(len) => {
-                paths.insert(len, path.clone());
+            Entry::Vacant(entry) => {
+                entry.insert(path.clone());
             }
         }
         return;
@@ -42,8 +45,8 @@ pub fn solve<const CHECK_CYCLES: bool>(input: &'static str) -> Vec<&str> {
         nodes.insert(node, children);
     });
 
-    let mut paths = Vec::new();
+    let mut paths = Default::default();
     walk::<CHECK_CYCLES>(&nodes, &mut vec!["RR"], &mut paths);
     debug_assert_eq!(paths.len(), 1);
-    paths.pop().unwrap()
+    paths.into_values().next().unwrap()
 }
