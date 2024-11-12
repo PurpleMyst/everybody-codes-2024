@@ -12,10 +12,7 @@ fn concat(a: usize, b: u16) -> usize {
 }
 
 fn shout(columns: &Columns) -> usize {
-    columns
-        .iter()
-        .map(|column| column[0])
-        .fold(0, |acc, n| concat(acc, n))
+    columns.iter().map(|column| column[0]).fold(0, |acc, n| concat(acc, n))
 }
 
 fn parse_input(input: &str) -> Columns {
@@ -24,10 +21,7 @@ fn parse_input(input: &str) -> Columns {
         .trim()
         .lines()
         .map(|line| line.split(' ').map(|n| n.parse::<u16>().unwrap()))
-        .for_each(|row| {
-            row.zip(columns.iter_mut())
-                .for_each(|(cell, column)| column.push(cell))
-        });
+        .for_each(|row| row.zip(columns.iter_mut()).for_each(|(cell, column)| column.push(cell)));
     columns
 }
 

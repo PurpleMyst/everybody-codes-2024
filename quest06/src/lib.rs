@@ -1,5 +1,4 @@
-use std::collections::hash_map::Entry;
-use std::hash::Hash;
+use std::{collections::hash_map::Entry, hash::Hash};
 
 use rustc_hash::FxHashMap as HashMap;
 
@@ -77,7 +76,7 @@ pub fn solve_part1(input: &'static str) -> String {
         |s| s == FRUIT,
     )
     .into_iter()
-    .fold(String::new(), |mut acc, s| {
+    .fold(String::with_capacity(13), |mut acc, s| {
         acc.push_str(match s {
             FRUIT => "@",
             _ => std::str::from_utf8(&s[..]).unwrap(),
@@ -100,7 +99,7 @@ fn solve_part23<const CHECK_CYCLES: bool>(input: &'static str) -> String {
         |s| s == FRUIT,
     )
     .into_iter()
-    .fold(String::new(), |mut acc, s| {
+    .fold(String::with_capacity(13), |mut acc, s| {
         acc.push(match s {
             FRUIT => '@',
             ROOT => 'R',

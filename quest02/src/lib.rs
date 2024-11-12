@@ -17,9 +17,7 @@ pub fn solve_part1(input: &str) -> u64 {
         .map(|haystack| {
             words
                 .iter()
-                .map(|&needle| {
-                    word_mask::<false>(needle, haystack).count_ones() as u64 / needle.len() as u64
-                })
+                .map(|&needle| word_mask::<false>(needle, haystack).count_ones() as u64 / needle.len() as u64)
                 .sum::<u64>()
         })
         .sum()
@@ -64,9 +62,7 @@ pub fn solve_part2(input: &str) -> u64 {
 
             let mask = words
                 .iter()
-                .map(|&word| {
-                    word_mask::<true>(word, hay_bytes) | word_mask::<false>(word, hay_bytes)
-                })
+                .map(|&word| word_mask::<true>(word, hay_bytes) | word_mask::<false>(word, hay_bytes))
                 .fold(0u64, |a, b| a | b);
 
             mask.count_ones() as u64
@@ -127,26 +123,21 @@ pub fn solve_part3(input: &str) -> u64 {
 fn part3_step<const PACMAN: bool>(words: &[Vec<u8>], grid: &[Vec<u8>], mask: &mut [Vec<bool>]) {
     let grid_width = grid[0].len();
 
-    let xes = |word_len, i| {
-        (0..word_len).map(move |j| (j, if PACMAN { (i + j) % grid_width } else { i + j }))
-    };
+    let xes = |word_len, i| (0..word_len).map(move |j| (j, if PACMAN { (i + j) % grid_width } else { i + j }));
 
-    grid.par_iter()
-        .zip(mask.par_iter_mut())
-        .for_each(|(row, row_mask)| {
-            for word_start in 0..grid_width {
-                let first_char = row[word_start];
-                for word in words.iter().filter(|w| w[0] == first_char) {
-                    let matches =
-                        xes(word.len(), word_start).all(|(j, x)| row.get(x) == Some(&word[j]));
-                    if matches {
-                        for (_, x) in xes(word.len(), word_start) {
-                            row_mask[x] = true;
-                        }
+    grid.par_iter().zip(mask.par_iter_mut()).for_each(|(row, row_mask)| {
+        for word_start in 0..grid_width {
+            let first_char = row[word_start];
+            for word in words.iter().filter(|w| w[0] == first_char) {
+                let matches = xes(word.len(), word_start).all(|(j, x)| row.get(x) == Some(&word[j]));
+                if matches {
+                    for (_, x) in xes(word.len(), word_start) {
+                        row_mask[x] = true;
                     }
                 }
             }
-        });
+        }
+    });
 }
 
 #[cfg(test)]

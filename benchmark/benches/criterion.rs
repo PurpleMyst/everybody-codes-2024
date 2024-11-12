@@ -21,19 +21,13 @@ fn bench_quest01(c: &mut Criterion) {
 
 fn bench_quest02(c: &mut Criterion) {
     let input1 = include_str!("../../quest02/src/part1.txt");
-    c.bench_function("quest02_part1", |b| {
-        b.iter(|| quest02::solve_part1(black_box(input1)))
-    });
+    c.bench_function("quest02_part1", |b| b.iter(|| quest02::solve_part1(black_box(input1))));
 
     let input2 = include_str!("../../quest02/src/part2.txt");
-    c.bench_function("quest02_part2", |b| {
-        b.iter(|| quest02::solve_part2(black_box(input2)))
-    });
+    c.bench_function("quest02_part2", |b| b.iter(|| quest02::solve_part2(black_box(input2))));
 
     let input3 = include_str!("../../quest02/src/part3.txt");
-    c.bench_function("quest02_part3", |b| {
-        b.iter(|| quest02::solve_part3(black_box(input3)))
-    });
+    c.bench_function("quest02_part3", |b| b.iter(|| quest02::solve_part3(black_box(input3))));
 }
 
 fn bench_quest03(c: &mut Criterion) {
@@ -55,53 +49,35 @@ fn bench_quest03(c: &mut Criterion) {
 
 fn bench_quest04(c: &mut Criterion) {
     let input1 = include_str!("../../quest04/src/part1.txt");
-    c.bench_function("quest04_part1", |b| {
-        b.iter(|| quest04::solve_part12(black_box(input1)))
-    });
+    c.bench_function("quest04_part1", |b| b.iter(|| quest04::solve_part12(black_box(input1))));
 
     let input2 = include_str!("../../quest04/src/part2.txt");
-    c.bench_function("quest04_part2", |b| {
-        b.iter(|| quest04::solve_part12(black_box(input2)))
-    });
+    c.bench_function("quest04_part2", |b| b.iter(|| quest04::solve_part12(black_box(input2))));
 
     let input3 = include_str!("../../quest04/src/part3.txt");
-    c.bench_function("quest04_part3", |b| {
-        b.iter(|| quest04::solve_part3(black_box(input3)))
-    });
+    c.bench_function("quest04_part3", |b| b.iter(|| quest04::solve_part3(black_box(input3))));
 }
 
 fn bench_quest05(c: &mut Criterion) {
     let input1 = include_str!("../../quest05/src/part1.txt");
-    c.bench_function("quest05_part1", |b| {
-        b.iter(|| quest05::solve_part1(black_box(input1)))
-    });
+    c.bench_function("quest05_part1", |b| b.iter(|| quest05::solve_part1(black_box(input1))));
 
     let input2 = include_str!("../../quest05/src/part2.txt");
-    c.bench_function("quest05_part2", |b| {
-        b.iter(|| quest05::solve_part2(black_box(input2)))
-    });
+    c.bench_function("quest05_part2", |b| b.iter(|| quest05::solve_part2(black_box(input2))));
 
     let input3 = include_str!("../../quest05/src/part3.txt");
-    c.bench_function("quest05_part3", |b| {
-        b.iter(|| quest05::solve_part3(black_box(input3)))
-    });
+    c.bench_function("quest05_part3", |b| b.iter(|| quest05::solve_part3(black_box(input3))));
 }
 
 fn bench_quest06(c: &mut Criterion) {
     let input1 = include_str!("../../quest06/src/part1.txt");
-    c.bench_function("quest06_part1", |b| {
-        b.iter(|| quest06::solve_part1(black_box(input1)))
-    });
+    c.bench_function("quest06_part1", |b| b.iter(|| quest06::solve_part1(black_box(input1))));
 
     let input2 = include_str!("../../quest06/src/part2.txt");
-    c.bench_function("quest06_part2", |b| {
-        b.iter(|| quest06::solve_part2(black_box(input2)))
-    });
+    c.bench_function("quest06_part2", |b| b.iter(|| quest06::solve_part2(black_box(input2))));
 
     let input3 = include_str!("../../quest06/src/part3.txt");
-    c.bench_function("quest06_part3", |b| {
-        b.iter(|| quest06::solve_part3(black_box(input3)))
-    });
+    c.bench_function("quest06_part3", |b| b.iter(|| quest06::solve_part3(black_box(input3))));
 }
 
 fn bench_all(c: &mut Criterion) {
