@@ -1,17 +1,10 @@
-use quest06::{solve, Path};
+use quest06::{solve_part1, solve_part2, solve_part3};
 
 fn main() {
-    let part1 = solve::<false>(include_str!("part1.txt")).join("");
-    let part2 = first_letters(solve::<false>(include_str!("part2.txt")));
-    let part3 = first_letters(solve::<true>(include_str!("part3.txt")));
-
+    let part1 = solve_part1(include_str!("part1.txt"));
+    let part2 = solve_part2(include_str!("part2.txt"));
+    let part3 = solve_part3(include_str!("part3.txt"));
     println!("{}", part1);
     println!("{}", part2);
     println!("{}", part3);
-}
-
-fn first_letters(path: Path) -> String {
-    path.iter()
-        .map(|&node| node.chars().next().unwrap())
-        .collect()
 }

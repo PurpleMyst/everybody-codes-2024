@@ -1,16 +1,18 @@
 use std::collections::hash_map::Entry;
+use std::hash::Hash;
 
 use rustc_hash::FxHashMap as HashMap;
 
-type Id = &'static str;
-type Tree = HashMap<Id, Vec<Id>>;
-pub type Path = Vec<Id>;
+type Tree<Id> = HashMap<Id, Vec<Id>>;
 
-const FRUIT: &str = "@";
-
-fn walk<const CHECK_CYCLES: bool>(tree: &Tree, path: &mut Path, paths: &mut HashMap<usize, Path>) {
+fn walk<Id: Hash + Eq + Copy, IsFruit: Fn(Id) -> bool>(
+    tree: &Tree<Id>,
+    path: &mut Vec<Id>,
+    paths: &mut HashMap<usize, Vec<Id>>,
+    is_fruit: &IsFruit,
+) {
     let &conductor = path.last().unwrap();
-    if conductor == FRUIT {
+    if is_fruit(conductor) {
         match paths.entry(path.len()) {
             Entry::Occupied(entry) => {
                 entry.remove();
@@ -22,31 +24,96 @@ fn walk<const CHECK_CYCLES: bool>(tree: &Tree, path: &mut Path, paths: &mut Hash
         return;
     }
 
-    let Some(children) = tree.get(conductor) else {
+    let Some(children) = tree.get(&conductor) else {
         return;
     };
 
     children.iter().for_each(|&node| {
-        if CHECK_CYCLES && path.contains(&node) {
-            return;
-        }
         path.push(node);
-        walk::<CHECK_CYCLES>(tree, path, paths);
+        walk::<Id, IsFruit>(tree, path, paths, is_fruit);
         path.pop();
     })
 }
 
-
-pub fn solve<const CHECK_CYCLES: bool>(input: &'static str) -> Vec<&str> {
+fn solve<
+    const CHECK_FOR_BUGS: bool,
+    Id: Hash + Eq + Copy,
+    ConvertId: Fn(&'static str) -> Id,
+    IsFruit: Fn(Id) -> bool,
+>(
+    input: &'static str,
+    convert_id: ConvertId,
+    is_fruit: IsFruit,
+) -> Vec<Id> {
     let mut nodes = HashMap::default();
     input.lines().for_each(|line| {
         let (node, children) = line.split_once(':').unwrap();
-        let children = children.split(',').collect::<Vec<_>>();
-        nodes.insert(node, children);
+        if CHECK_FOR_BUGS && matches!(node, "ANT" | "BUG") {
+            return;
+        }
+        let children = children
+            .split(',')
+            .filter(|&s| !(CHECK_FOR_BUGS && matches!(s, "ANT" | "BUG")))
+            .map(&convert_id)
+            .collect::<Vec<_>>();
+        nodes.insert(convert_id(node), children);
     });
 
     let mut paths = Default::default();
-    walk::<CHECK_CYCLES>(&nodes, &mut vec!["RR"], &mut paths);
+    walk::<Id, IsFruit>(&nodes, &mut vec![convert_id("RR")], &mut paths, &is_fruit);
     debug_assert_eq!(paths.len(), 1);
     paths.into_values().next().unwrap()
+}
+
+pub fn solve_part1(input: &'static str) -> String {
+    type Id = [u8; 2];
+    const FRUIT: Id = [b'\0', b'@'];
+    solve::<false, _, _, _>(
+        input,
+        |s| match s {
+            "@" => FRUIT,
+            _ => Id::try_from(s.as_bytes()).unwrap(),
+        },
+        |s| s == FRUIT,
+    )
+    .into_iter()
+    .fold(String::new(), |mut acc, s| {
+        acc.push_str(match s {
+            FRUIT => "@",
+            _ => std::str::from_utf8(&s[..]).unwrap(),
+        });
+        acc
+    })
+}
+
+fn solve_part23<const CHECK_CYCLES: bool>(input: &'static str) -> String {
+    type Id = [u8; 4];
+    const FRUIT: Id = [b'\0', b'\0', b'\0', b'@'];
+    const ROOT: Id = [b'\0', b'\0', b'R', b'R'];
+    solve::<CHECK_CYCLES, _, _, _>(
+        input,
+        |s| match s {
+            "@" => FRUIT,
+            "RR" => ROOT,
+            _ => Id::try_from(s.as_bytes()).unwrap(),
+        },
+        |s| s == FRUIT,
+    )
+    .into_iter()
+    .fold(String::new(), |mut acc, s| {
+        acc.push(match s {
+            FRUIT => '@',
+            ROOT => 'R',
+            _ => s[0] as char,
+        });
+        acc
+    })
+}
+
+pub fn solve_part2(input: &'static str) -> String {
+    solve_part23::<false>(input)
+}
+
+pub fn solve_part3(input: &'static str) -> String {
+    solve_part23::<true>(input)
 }
