@@ -1,5 +1,14 @@
 use rayon::prelude::*;
 
+const PART2_LOOPS: usize = 10;
+
+const PART3_PLAN_LEN: usize = 11;
+
+// We know the map to be 340 cells long and the plan to be 11 cells long, therefore the pairs repeat every lcm(340, 11)
+// = 3740 cells. We can therefore run through this macroloop once (3740 iterations) and assume the rest of the
+// macroloops would add the same amout to the power (and therefore to the total, in a quadratic way).
+const PART3_LOOPS: usize = PART3_PLAN_LEN;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Action {
     Add,
@@ -63,7 +72,7 @@ pub fn solve_part2(input: &str) -> String {
         .map(|line| {
             let (name, plan) = line.split_once(':').unwrap();
             let plan = plan.bytes().step_by(2).map(Action::from).collect::<Vec<_>>();
-            (name, execute_plan(&part2_map, &plan, 10))
+            (name, execute_plan(&part2_map, &plan, PART2_LOOPS))
         })
         .collect::<Vec<_>>();
     plans.sort_by_key(|(_, power)| *power);
@@ -82,14 +91,14 @@ pub fn solve_part3(input: &str) -> usize {
         .step_by(2)
         .map(Action::from)
         .collect::<Vec<_>>();
-    let target = execute_plan(&part3_map, &enemy_plan, 2024);
+    let target = execute_plan(&part3_map, &enemy_plan, PART3_LOOPS);
 
     let mut possible_plans = Vec::new();
     all_possible_plans(5, 3, 3, &mut possible_plans, &mut Vec::new());
 
     possible_plans
         .into_par_iter()
-        .filter(|plan| execute_plan(&part3_map, plan, 2024) > target)
+        .filter(|plan| execute_plan(&part3_map, plan, PART3_LOOPS) > target)
         .count()
 }
 
@@ -135,7 +144,7 @@ fn all_possible_plans(
     }
 
     if pluses_remaining == 0 && minuses_remaining == 0 && equals_remaining == 0 {
-        debug_assert_eq!(current.len(), 11);
+        debug_assert_eq!(current.len(), PART3_PLAN_LEN);
         output.push(current.clone());
     }
 }
@@ -146,12 +155,16 @@ fn execute_plan(map: &[Action], plan: &[Action], n: usize) -> u64 {
 
     let map_len = map.len();
     let plan_len = plan.len();
-    let total_iterations = n * map_len - 1; // Adjusted for skipping the first map action
 
-    let mut map_idx = 1 % map_len; // Start from index 1 as per original logic
+    // Calculate the indices such that:
+    // 1) The race starts at the first cell after the S;
+    // 2) The race ends at the S, after however many loops we've been asked to do;
+    // 3) The plan starts at the first cell after the S.
+    let mut map_idx = 1;
     let mut plan_idx = 0;
+    let total_iterations = n * map_len + 1;
 
-    // Precompute delta table to eliminate match statements inside the loop
+    // Precalculated lookup table for the power change.
     const DELTA_TABLE: [[i8; 3]; 3] = [
         // plan_action: Add, Sub, Stay
         [1, 1, 1],    // map_action: Add
@@ -160,15 +173,16 @@ fn execute_plan(map: &[Action], plan: &[Action], n: usize) -> u64 {
     ];
 
     for _ in 0..total_iterations {
+        // Find the action pair for this iteration.
         let map_action = map[map_idx];
         let plan_action = plan[plan_idx];
 
-        // Use precomputed delta table to get the power change
+        // Use precomputed delta table to get the power change.
         let delta = DELTA_TABLE[map_action.to_index()][plan_action.to_index()] as i64;
         power = power.wrapping_add(delta as u64);
         total = total.wrapping_add(power);
 
-        // Increment indices with wrap-around
+        // Increment indices with wrap-around.
         map_idx = if map_idx + 1 == map_len { 0 } else { map_idx + 1 };
         plan_idx = if plan_idx + 1 == plan_len { 0 } else { plan_idx + 1 };
     }
