@@ -52,8 +52,8 @@ pub fn solve_part2(input: &str) -> String {
         .lines()
         .map(|line| {
             let (name, plan) = line.split_once(':').unwrap();
-            let plan = plan.bytes().step_by(2).map(Action::from);
-            (name, execute_plan(&part2_map, &plan.collect::<Vec<_>>(), 10))
+            let plan = plan.bytes().step_by(2).map(Action::from).collect::<Vec<_>>();
+            (name, execute_plan(&part2_map, &plan, 10))
         })
         .collect::<Vec<_>>();
     plans.sort_by_key(|(_, power)| *power);
@@ -81,10 +81,6 @@ pub fn solve_part3(input: &str) -> usize {
         .into_par_iter()
         .filter(|plan| execute_plan(&part3_map, plan, 2024) > target)
         .count()
-}
-
-fn loops(n: usize, s: &[Action]) -> impl Iterator<Item = Action> + '_ {
-    s.iter().cycle().take(n * s.len() + 1).skip(1).copied()
 }
 
 fn all_possible_plans(
@@ -135,16 +131,36 @@ fn all_possible_plans(
 }
 
 fn execute_plan(map: &[Action], plan: &[Action], n: usize) -> u64 {
-    let mut power = 10u64;
+    let mut power = 10;
     let mut total = 0;
 
-    for (map, action) in loops(n, map).zip(plan.iter().cycle()) {
-        match (map, action) {
+    let map_len = map.len();
+    let plan_len = plan.len();
+    let iterations = n * map_len;
+
+    let mut map_idx = 1 % map_len; // Start from index 1 as per original logic
+    let mut plan_idx = 0;
+
+    for _ in 0..iterations {
+        let map_action = map[map_idx];
+        let plan_action = plan[plan_idx];
+
+        match (map_action, plan_action) {
             (Action::Add, _) | (Action::Stay, Action::Add) => power += 1,
             (Action::Sub, _) | (Action::Stay, Action::Sub) => power -= 1,
             (Action::Stay, Action::Stay) => (),
         }
         total += power;
+
+        map_idx += 1;
+        if map_idx == map_len {
+            map_idx = 0;
+        }
+
+        plan_idx += 1;
+        if plan_idx == plan_len {
+            plan_idx = 0;
+        }
     }
 
     total
