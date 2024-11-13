@@ -18,6 +18,16 @@ impl From<u8> for Action {
     }
 }
 
+impl Action {
+    fn to_index(self) -> usize {
+        match self {
+            Action::Add => 0,
+            Action::Sub => 1,
+            Action::Stay => 2,
+        }
+    }
+}
+
 pub fn solve_part1(input: &str) -> String {
     let mut plans = input
         .lines()
@@ -131,36 +141,36 @@ fn all_possible_plans(
 }
 
 fn execute_plan(map: &[Action], plan: &[Action], n: usize) -> u64 {
-    let mut power = 10;
-    let mut total = 0;
+    let mut power = 10u64;
+    let mut total = 0u64;
 
     let map_len = map.len();
     let plan_len = plan.len();
-    let iterations = n * map_len;
+    let total_iterations = n * map_len - 1; // Adjusted for skipping the first map action
 
     let mut map_idx = 1 % map_len; // Start from index 1 as per original logic
     let mut plan_idx = 0;
 
-    for _ in 0..iterations {
+    // Precompute delta table to eliminate match statements inside the loop
+    const DELTA_TABLE: [[i8; 3]; 3] = [
+        // plan_action: Add, Sub, Stay
+        [1, 1, 1],    // map_action: Add
+        [-1, -1, -1], // map_action: Sub
+        [1, -1, 0],   // map_action: Stay
+    ];
+
+    for _ in 0..total_iterations {
         let map_action = map[map_idx];
         let plan_action = plan[plan_idx];
 
-        match (map_action, plan_action) {
-            (Action::Add, _) | (Action::Stay, Action::Add) => power += 1,
-            (Action::Sub, _) | (Action::Stay, Action::Sub) => power -= 1,
-            (Action::Stay, Action::Stay) => (),
-        }
-        total += power;
+        // Use precomputed delta table to get the power change
+        let delta = DELTA_TABLE[map_action.to_index()][plan_action.to_index()] as i64;
+        power = power.wrapping_add(delta as u64);
+        total = total.wrapping_add(power);
 
-        map_idx += 1;
-        if map_idx == map_len {
-            map_idx = 0;
-        }
-
-        plan_idx += 1;
-        if plan_idx == plan_len {
-            plan_idx = 0;
-        }
+        // Increment indices with wrap-around
+        map_idx = if map_idx + 1 == map_len { 0 } else { map_idx + 1 };
+        plan_idx = if plan_idx + 1 == plan_len { 0 } else { plan_idx + 1 };
     }
 
     total
