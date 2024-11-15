@@ -32,24 +32,26 @@ pub fn solve_part3(input: &str) -> usize {
 
     let table = solve_for_all_targets(&PART3_AVAILABLE_STAMPS, &targets);
 
-    targets.iter().copied().map(|target| 
-        (target/2..=target/2+50)
-            .map(|a| table[a] + table[target - a])
-            .min().unwrap()
-    ).sum()
+    targets
+        .iter()
+        .copied()
+        .map(|target| {
+            (target / 2..=target / 2 + 50)
+                .map(|a| table[a] + table[target - a])
+                .min()
+                .unwrap()
+        })
+        .sum()
 }
 
-// adapted from 
+// adapted from
 // https://github.com/maneatingape/everybody-codes-rust/blob/090c126651fc5c4dfde4af07e4dd304ff4928b5b/src/event2024/quest09.rs#L21
-fn solve_for_all_targets(
-    stamps: &[usize],
-    targets: &[usize],
-) -> Box<[usize]> {
+fn solve_for_all_targets(stamps: &[usize], targets: &[usize]) -> Box<[usize]> {
     // Compute the maximum target value.
     let max_target = targets.iter().copied().max().unwrap();
 
     // Create a dynamic programming table for each target value.
-    let mut min_stamps = vec![usize::MAX; 1+max_target].into_boxed_slice();
+    let mut min_stamps = vec![usize::MAX; 1 + max_target].into_boxed_slice();
 
     // Each stamp can be used to make a target value of itself.
     for &stamp in stamps {
