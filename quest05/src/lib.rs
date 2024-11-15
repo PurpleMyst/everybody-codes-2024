@@ -53,7 +53,7 @@ pub fn solve_part2(input: &str) -> usize {
         let counter = counters.entry(shouted).or_insert(0);
         *counter += 1;
         if *counter == 2024 {
-            return i + 1 * shouted;
+            return (i + 1) * shouted;
         }
     }
     unreachable!()
