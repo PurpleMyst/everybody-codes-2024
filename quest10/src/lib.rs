@@ -121,7 +121,7 @@ pub fn solve_part3(input: &str) -> impl Display {
                 // filling in.
                 if let Some(&x) = PATTERN_COORDS
                     .iter()
-                    .find(|&x| grid[(base_y + y, base_x + *x)] == UNKNOWN)
+                    .find(|&&x| grid[(base_y + y, base_x + x)] == UNKNOWN)
                 {
                     grid[(base_y + y, base_x + x)] = leftover;
                 }
@@ -154,7 +154,7 @@ pub fn solve_part3(input: &str) -> impl Display {
             if let Some(leftover) = only_one(leftovers) {
                 if let Some(&y) = PATTERN_COORDS
                     .iter()
-                    .find(|&y| grid[(base_y + *y, base_x + x)] == UNKNOWN)
+                    .find(|&&y| grid[(base_y + y, base_x + x)] == UNKNOWN)
                 {
                     grid[(base_y + y, base_x + x)] = leftover;
                 }
@@ -167,19 +167,17 @@ pub fn solve_part3(input: &str) -> impl Display {
     // Compute total power!
     let mut result = 0;
     let mut word = Vec::with_capacity(6 * 6);
-    for base_y in (0..h).step_by(6).take(h / 6) {
-        'grid_loop: for base_x in (0..w).step_by(6).take(w / 6) {
-            word.clear();
+    'grid_loop: for (base_y, base_x) in iproduct!((0..h).step_by(6).take(h / 6), (0..w).step_by(6).take(w / 6)) {
+        word.clear();
 
-            for (y, x) in iproduct!(2..6, 2..6) {
-                match grid[(base_y + y, base_x + x)] {
-                    EMPTY => continue 'grid_loop,
-                    b => word.push(b),
-                }
+        for (y, x) in iproduct!(2..6, 2..6) {
+            match grid[(base_y + y, base_x + x)] {
+                EMPTY => continue 'grid_loop,
+                b => word.push(b),
             }
-
-            result += power(word.drain(..));
         }
+
+        result += power(word.drain(..));
     }
 
     result
