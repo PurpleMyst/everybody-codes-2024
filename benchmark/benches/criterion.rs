@@ -17,7 +17,6 @@ macro_rules! bench_quests {
     };
 }
 
-
 fn bench_all(c: &mut Criterion) {
     bench_quests!(c =>
         quest01: quest01::solve_part::<1>, quest01::solve_part::<2>, quest01::solve_part::<3>;
@@ -33,6 +32,7 @@ fn bench_all(c: &mut Criterion) {
         quest11: quest11::solve_part1, quest11::solve_part2, quest11::solve_part3;
         quest12: quest12::solve_part12, quest12::solve_part12, quest12::solve_part3;
         quest13: quest13::solve_part12, quest13::solve_part12, quest13::solve_part3;
+        quest14: quest14::solve_part1, quest14::solve_part2, quest14::solve_part3;
     );
 }
 

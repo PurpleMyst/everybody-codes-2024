@@ -114,7 +114,10 @@ impl Catapult {
         // });
         let first = Line::fortyfive(self.x as isize, initial_y as isize);
         let second = Line::horizontal(power as isize + initial_y as isize);
-        let third = Line::minus_fortyfive(self.x as isize + 2 * power as isize, power as isize + initial_y as isize);
+        let third = Line::minus_fortyfive(
+            self.x as isize + 2 * power as isize,
+            power as isize + initial_y as isize,
+        );
         [first, second, third]
     }
 }
@@ -204,11 +207,7 @@ pub fn solve_part12(input: &str) -> impl Display {
     result
 }
 
-fn meteorite_hit(x0: usize,
-    y0: usize,
-    x1: usize,
-    y1: usize,
-) -> Option<usize> {
+fn meteorite_hit(x0: usize, y0: usize, x1: usize, y1: usize) -> Option<usize> {
     let q = y0 as isize - x0 as isize;
 
     if q > y1 as isize {
@@ -240,19 +239,17 @@ pub fn solve_part3(input: &str) -> impl Display {
             let (shot, _hit) = iproduct!([Segment::A, Segment::B, Segment::C], 1..=delta_x as usize)
                 .map(|(segment, power)| Shot { segment, power })
                 .flat_map(|shot| {
-                    catapult.shoot(shot).enumerate().filter(|&(t1, projectile)| {
-                        if let Some(t2) = meteorite_hit(
-                            target_x,
-                            target_y,
-                            projectile.x,
-                            projectile.y
-                        ) {
-                            t1 <= t2
-                        } else {
-                            false
-                        }
-                    })
-                    .map(move |(_, hit)| (shot, hit))
+                    catapult
+                        .shoot(shot)
+                        .enumerate()
+                        .filter(|&(t1, projectile)| {
+                            if let Some(t2) = meteorite_hit(target_x, target_y, projectile.x, projectile.y) {
+                                t1 <= t2
+                            } else {
+                                false
+                            }
+                        })
+                        .map(move |(_, hit)| (shot, hit))
                 })
                 .min_by_key(|(shot, hit)| (std::cmp::Reverse(hit.y), shot.score()))
                 .unwrap();
