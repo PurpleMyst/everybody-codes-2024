@@ -1,7 +1,8 @@
-use std::{collections::HashMap, fmt::Display, cmp::Reverse};
+use std::{fmt::Display, cmp::Reverse};
 
 use grid::Grid;
 use priority_queue::PriorityQueue;
+use rustc_hash::FxHashMap as HashMap;
 
 pub fn solve_part1(input: &str) -> impl Display {
     let map = Grid::from_vec(
@@ -72,7 +73,7 @@ pub fn solve_part23(input: &str) -> impl Display {
     let mut q = PriorityQueue::new();
     q.push((start, 0u32), Reverse(0));
 
-    let mut dist = HashMap::new();
+    let mut dist = HashMap::default();
     dist.insert((start, 0), 0);
 
     let neighbors = |(y, x): (usize, usize)| {

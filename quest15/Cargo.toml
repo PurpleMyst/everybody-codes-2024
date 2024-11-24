@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 grid = "0.15.0"
+petgraph = "0.6.5"
 priority-queue = "2.1.1"
+rustc-hash = "2.0.0"
