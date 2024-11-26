@@ -96,28 +96,19 @@ impl Catapult {
             Segment::B => 1,
             Segment::C => 2,
         };
-        // let first = Line::fortyfive(self.x as isize, match segment {
-        //     Segment::A => 0,
-        //     Segment::B => 1,
-        //     Segment::C => 2,
-        // });
-        // let second = Line::horizontal(power + match segment {
-        //     Segment::A => 0,
-        //     Segment::B => 1,
-        //     Segment::C => 2,
-        // });
-        // let third = Line::minus_fortyfive(
-        //     , match segment {
-        //     Segment::A => 0,
-        //     Segment::B => 1,
-        //     Segment::C => 2,
-        // });
+
+        // First segment: Up phase (45 degrees)
         let first = Line::fortyfive(self.x as isize, initial_y as isize);
-        let second = Line::horizontal(power as isize + initial_y as isize);
+
+        // Second segment: Right phase (horizontal)
+        let second = Line::horizontal((initial_y + power) as isize);
+
+        // Third segment: Down phase (-45 degrees)
         let third = Line::minus_fortyfive(
-            self.x as isize + 2 * power as isize,
-            power as isize + initial_y as isize,
+            (self.x + 2 * power) as isize,
+            (initial_y + power) as isize,
         );
+
         [first, second, third]
     }
 }
@@ -191,17 +182,62 @@ pub fn solve_part12(input: &str) -> impl Display {
     for (target_x, target_y, multiplier) in targets {
         let delta_x = target_x as isize - catapult.x as isize;
 
-        let shot = iproduct!([Segment::A, Segment::B, Segment::C], 1..=delta_x as usize)
-            .map(|(segment, power)| Shot { segment, power })
-            .find(|shot| {
-                catapult
-                    .shoot(*shot)
-                    .find(|projectile| projectile.x == target_x && projectile.y == target_y)
-                    .is_some()
-            })
-            .unwrap();
+        let mut min_score = None;
 
-        result += multiplier * shot.score();
+        for segment in [Segment::A, Segment::B, Segment::C] {
+            let initial_y = match segment {
+                Segment::A => 0,
+                Segment::B => 1,
+                Segment::C => 2,
+            } as isize;
+            let segment_multiplier = match segment {
+                Segment::A => 1,
+                Segment::B => 2,
+                Segment::C => 3,
+            };
+
+            // Up phase
+            if target_y as isize - target_x as isize == initial_y - catapult.x as isize {
+                let power = (target_x as isize - catapult.x as isize) as usize;
+                if power >= 1 {
+                    let score = power * segment_multiplier;
+                    if min_score.map_or(true, |s| score < s) {
+                        min_score = Some(score);
+                    }
+                }
+            }
+
+            // Right phase
+            let power = (target_y as isize - initial_y) as usize;
+            if power >= 1 {
+                let delta_x = target_x as isize - catapult.x as isize;
+                if delta_x >= (power + 1) as isize && delta_x <= (2 * power - 1) as isize {
+                    let score = power * segment_multiplier;
+                    if min_score.map_or(true, |s| score < s) {
+                        min_score = Some(score);
+                    }
+                }
+            }
+
+            // Down phase
+            let numerator = target_x as isize + target_y as isize - initial_y - catapult.x as isize;
+            if numerator % 3 == 0 {
+                let power = (numerator / 3) as usize;
+                if power >= 1 {
+                    let delta_x = target_x as isize - catapult.x as isize;
+                    if delta_x >= (2 * power) as isize {
+                        let score = power * segment_multiplier;
+                        if min_score.map_or(true, |s| score < s) {
+                            min_score = Some(score);
+                        }
+                    }
+                }
+            }
+        }
+
+        if let Some(score) = min_score {
+            result += multiplier * score;
+        }
     }
 
     result
@@ -236,25 +272,64 @@ pub fn solve_part3(input: &str) -> impl Display {
         .map(|(target_x, target_y)| {
             let delta_x = target_x as isize - catapult.x as isize;
 
-            let (shot, _hit) = iproduct!([Segment::A, Segment::B, Segment::C], 1..=delta_x as usize)
-                .map(|(segment, power)| Shot { segment, power })
-                .flat_map(|shot| {
-                    catapult
-                        .shoot(shot)
-                        .enumerate()
-                        .filter(|&(t1, projectile)| {
-                            if let Some(t2) = meteorite_hit(target_x, target_y, projectile.x, projectile.y) {
-                                t1 <= t2
-                            } else {
-                                false
-                            }
-                        })
-                        .map(move |(_, hit)| (shot, hit))
-                })
-                .min_by_key(|(shot, hit)| (std::cmp::Reverse(hit.y), shot.score()))
-                .unwrap();
+            let mut min_score: Option<usize> = None;
 
-            shot.score()
+            for segment in [Segment::A, Segment::B, Segment::C] {
+                let initial_y = match segment {
+                    Segment::A => 0,
+                    Segment::B => 1,
+                    Segment::C => 2,
+                } as isize;
+                let segment_multiplier = match segment {
+                    Segment::A => 1,
+                    Segment::B => 2,
+                    Segment::C => 3,
+                };
+
+                // Up phase
+                if target_y as isize - target_x as isize == initial_y - catapult.x as isize {
+                    let power = (target_x as isize - catapult.x as isize) as usize;
+                    if power >= 1 {
+                        let score = power * segment_multiplier;
+                        min_score = match min_score {
+                            Some(s) => Some(s.min(score)),
+                            None => Some(score),
+                        };
+                    }
+                }
+
+                // Right phase
+                let power = (target_y as isize - initial_y) as usize;
+                if power >= 1 {
+                    let delta_x = target_x as isize - catapult.x as isize;
+                    if delta_x >= (power + 1) as isize && delta_x <= (2 * power - 1) as isize {
+                        let score = power * segment_multiplier;
+                        min_score = match min_score {
+                            Some(s) => Some(s.min(score)),
+                            None => Some(score),
+                        };
+                    }
+                }
+
+                // Down phase
+                let numerator =
+                    target_x as isize + target_y as isize - initial_y - catapult.x as isize;
+                if numerator % 3 == 0 {
+                    let power = (numerator / 3) as usize;
+                    if power >= 1 {
+                        let delta_x = target_x as isize - catapult.x as isize;
+                        if delta_x >= (2 * power) as isize {
+                            let score = power * segment_multiplier;
+                            min_score = match min_score {
+                                Some(s) => Some(s.min(score)),
+                                None => Some(score),
+                            };
+                        }
+                    }
+                }
+            }
+
+            min_score.unwrap_or(0)
         })
         .sum::<usize>()
 }
