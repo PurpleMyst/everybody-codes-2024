@@ -1,0 +1,13 @@
+[package]
+name = "quest17"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+grid = "0.15.0"
+indicatif = "0.17.9"
+petgraph = "0.6.5"
+rand = "0.8.5"
+rayon = "1.10.0"
