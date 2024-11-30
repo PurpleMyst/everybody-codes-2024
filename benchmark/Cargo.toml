@@ -23,6 +23,7 @@ quest15 = { path = "../quest15" }
 quest16 = { path = "../quest16" }
 quest17 = { path = "../quest17" }
 quest18 = { path = "../quest18" }
+quest19 = { path = "../quest19" }
 
 [[bench]]
 name = "criterion"

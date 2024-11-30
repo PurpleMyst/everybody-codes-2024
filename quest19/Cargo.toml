@@ -1,0 +1,13 @@
+[package]
+name = "quest19"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+grid = "0.15.0"
+indicatif = "0.17.9"
+itertools = "0.13.0"
+nalgebra = "0.33.2"
+rayon = "1.10.0"
