@@ -104,10 +104,7 @@ impl Catapult {
         let second = Line::horizontal((initial_y + power) as isize);
 
         // Third segment: Down phase (-45 degrees)
-        let third = Line::minus_fortyfive(
-            (self.x + 2 * power) as isize,
-            (initial_y + power) as isize,
-        );
+        let third = Line::minus_fortyfive((self.x + 2 * power) as isize, (initial_y + power) as isize);
 
         [first, second, third]
     }
@@ -312,8 +309,7 @@ pub fn solve_part3(input: &str) -> impl Display {
                 }
 
                 // Down phase
-                let numerator =
-                    target_x as isize + target_y as isize - initial_y - catapult.x as isize;
+                let numerator = target_x as isize + target_y as isize - initial_y - catapult.x as isize;
                 if numerator % 3 == 0 {
                     let power = (numerator / 3) as usize;
                     if power >= 1 {

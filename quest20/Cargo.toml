@@ -1,0 +1,13 @@
+[package]
+name = "quest20"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+arrayvec = "0.7.6"
+grid = "0.15.0"
+itertools = "0.13.0"
+pathfinding = "4.11.0"
+priority-queue = "2.1.1"

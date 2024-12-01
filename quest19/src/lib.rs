@@ -37,7 +37,6 @@ fn power(perm: &Permutation, k: usize) -> Permutation {
     result
 }
 
-
 pub fn solve_part1(input: &str) -> impl std::fmt::Display {
     let (key, map) = input.split_once("\n\n").unwrap();
     let mut map = grid::Grid::from_vec(

@@ -38,6 +38,7 @@ fn bench_all(c: &mut Criterion) {
         quest17: quest17::solve_part12, quest17::solve_part12, quest17::solve_part3;
         quest18: quest18::solve_part1, quest18::solve_part2, quest18::solve_part3;
         quest19: quest19::solve_part1, quest19::solve_part2, quest19::solve_part3;
+        quest20: quest20::solve_part1, quest20::solve_part2, quest20::solve_part3;
     );
 }
 
